@@ -1,6 +1,46 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function Login() {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [showError, setShowError] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/v1/customer/login",
+        formData
+      );
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        // Redirect to dashboard or home page after successful login
+        window.location.href = "/dashboard";
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      const timeer = setTimeout(() => {
+        setShowError(false);
+      }, 5000);
+      setShowError(true);
+    }
+  };
+
   return (
     <div className="container">
       <section className="vh-100 gradient-custom">
@@ -15,29 +55,38 @@ function Login() {
                       Please enter your login and password!
                     </p>
 
-                    <form>
+                    <form onSubmit={handleSubmit}>
                       <div className="form-group mb-4">
                         <input
                           type="email"
                           id="typeEmailX"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
                           className="form-control form-control-lg"
                           placeholder="Email"
                           required
                         />
                       </div>
-
                       <div className="form-group mb-4">
                         <input
                           type="password"
                           id="typePasswordX"
                           className="form-control form-control-lg"
                           placeholder="Password"
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
                           required
                         />
                       </div>
-
-                    
-
+                      <div
+                        hidden={!showError}
+                        class="alert alert-danger"
+                        role="alert"
+                      >
+                        Invalid username or password
+                      </div>{" "}
                       <button
                         className="btn btn-outline-light btn-lg px-5 mt-3"
                         type="submit"
@@ -45,14 +94,14 @@ function Login() {
                         Login
                       </button>
                     </form>
-
-        
                   </div>
 
                   <div>
                     <p className="mb-0">
                       Don't have an account?{" "}
-                      <Link className="text-white-50 fw-bold" to={"/register"}>Sign up</Link>
+                      <Link className="text-white-50 fw-bold" to={"/register"}>
+                        Sign up
+                      </Link>
                     </p>
                   </div>
                 </div>
